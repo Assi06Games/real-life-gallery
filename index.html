@@ -3,7 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jaroslav Mareš - Photography Gallery</title>
+    
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self'; 
+      script-src 'self' 'unsafe-inline' 'unsafe-eval'; 
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
+      font-src 'self' https://fonts.gstatic.com; 
+      img-src 'self' data:; 
+      connect-src 'self';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <title>Jaroslav Mareš - Photography Portfolio | Plzeň & Prague</title>
+    <meta name="description" content="Professional photography by Jaroslav Mareš based in Plzeň and Prague. Specializing in dark, moody portraits, architectural structures, and creative product photography.">
+    <meta name="keywords" content="Jaroslav Mareš, Photography, Photographer, Plzeň, Pilsen, Prague, Praha, Portraits, Architecture, Product Photography, Dark Aesthetic, Czech Republic">
+    <meta name="author" content="Jaroslav Mareš">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Jaroslav Mareš - Photography | Plzeň & Prague">
+    <meta property="og:description" content="Moody portraits, architecture, and product photography. View the portfolio.">
+    <meta property="og:image" content="/header-image.jpg">
+    <meta property="og:url" content="https://yourwebsite.com">
+    <meta property="og:locale" content="en_US">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jaroslav Mareš - Photography">
+    <meta name="twitter:description" content="Professional photography portfolio based in Plzeň/Prague.">
+    <meta name="twitter:image" content="/header-image.jpg">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -43,9 +71,9 @@
 
       <header class="header" id="main-header">
         <nav class="nav-bar">
-          <a href="#" class="nav-link" id="nav-gallery" data-target="gallery">GALLERY</a>
-          <a href="#" class="nav-link" id="pricing-link">PRICING</a>
-          <a href="#" class="nav-link" id="nav-about" data-target="about">INFO</a>
+          <a href="#" class="nav-link" id="nav-gallery" data-target="gallery">GALERIE</a>
+          <a href="#" class="nav-link" id="pricing-link">CENÍK</a>
+          <a href="#" class="nav-link" id="nav-about" data-target="about">KONTAKTY</a>
         </nav>
 
         <div class="header-content">
@@ -59,20 +87,20 @@
             
             <nav class="elevator-nav">
                 <div class="elevator-btn active" data-floor="0">
-                    <span class="letter">P</span><span class="reveal">ORTRAITS</span>
+                    <span class="letter">P</span><span class="reveal">ORTRÉTY</span>
                 </div>
                 <div class="elevator-btn" data-floor="1">
-                    <span class="letter">A</span><span class="reveal">RCHITECTURE</span>
+                    <span class="letter">A</span><span class="reveal">RCHITEKTURA</span>
                 </div>
                 <div class="elevator-btn" data-floor="2">
-                    <span class="letter">P</span><span class="reveal">RODUCT</span>
+                    <span class="letter">P</span><span class="reveal">RODUKT</span>
                 </div>
                 <div class="elevator-btn" data-floor="3">
                     <span class="letter">A</span><span class="reveal">RTISTIC</span>
                 </div>
             </nav>
 
-            <div id="floor-display">PORTRAITS</div>
+            <div id="floor-display">PORTRÉTY</div>
         </div>
       </header>
 
