@@ -27,6 +27,11 @@
           <filter id="soft-blur" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="20" />
           </filter>
+
+          <filter id="noise-grain">
+             <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/>
+             <feColorMatrix type="saturate" values="0"/>
+          </filter>
         </defs>
       </svg>
 
@@ -60,7 +65,7 @@
                     <span class="letter">A</span><span class="reveal">RCHITECTURE</span>
                 </div>
                 <div class="elevator-btn" data-floor="2">
-                    <span class="letter">N</span><span class="reveal">ATURE</span>
+                    <span class="letter">P</span><span class="reveal">RODUCT</span>
                 </div>
                 <div class="elevator-btn" data-floor="3">
                     <span class="letter">A</span><span class="reveal">RTISTIC</span>
@@ -77,6 +82,19 @@
                 </div>
         </div>
       </main>
+
+      <div id="pricing-container-wrapper">
+         <div class="pricing-glass-panel">
+            <div class="pricing-light-border"></div>
+            <div class="pricing-content" id="pricing-content-area"></div>
+            
+            <div class="pricing-close-trigger">
+                <svg width="30" height="20" viewBox="0 0 30 20" fill="none">
+                    <path d="M2 2L15 15L28 2" stroke="#444" stroke-width="2"/>
+                </svg>
+            </div>
+         </div>
+      </div>
 
       <footer class="footer-section" id="main-footer">
         <p>
@@ -99,42 +117,6 @@
       </div>
     </div>
 
-    <section id="pricing-section" class="pricing-overlay">
-    <div class="pricing-container">
-        <div class="pricing-card">
-            <h3>BASIC</h3>
-            <ul>
-                <li>1 HOUR SHOOT</li>
-                <li>10 EDITED PHOTOS</li>
-                <li>ONLINE GALLERY</li>
-            </ul>
-            <p class="price">3000 CZK</p>
-        </div>
-        <div class="pricing-card">
-            <h3>STANDARD</h3>
-            <ul>
-                <li>2 HOUR SHOOT</li>
-                <li>20 EDITED PHOTOS</li>
-                <li>1 SMALL PRINT</li>
-            </ul>
-            <p class="price">5500 CZK</p>
-        </div>
-        <div class="pricing-card">
-            <h3>PREMIUM</h3>
-            <ul>
-                <li>4 HOUR SHOOT</li>
-                <li>3 LARGE PRINTS</li>
-                <li>PHOTO ALBUM</li>
-            </ul>
-            <p class="price">9000 CZK</p>
-        </div>
-    </div>
-    <div class="pricing-arrow">
-        <svg width="30" height="20" viewBox="0 0 30 20" fill="none">
-            <path d="M2 2L15 15L28 2" stroke="white" stroke-width="3"/>
-        </svg>
-    </div>
-</section>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
