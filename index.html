@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jaroslav Mareš - Photography Gallery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="focus-gallery">
+    <div id="app">
+      
+      <svg width="0" height="0" style="position: absolute; visibility: hidden;">
+        <defs>
+          <linearGradient id="brass-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#EEDCBA" />
+            <stop offset="50%" stop-color="#CDB38B" />
+            <stop offset="100%" stop-color="#8B7355" />
+          </linearGradient>
+          
+          <linearGradient id="beam-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="rgba(255, 255, 255, 0.8)" />
+            <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+          </linearGradient>
+
+          <filter id="soft-blur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="20" />
+          </filter>
+        </defs>
+      </svg>
+
+      <div id="theater-lighting">
+          <div class="spot-ambient"></div>
+      </div>
+
+      <div id="global-dimmer"></div>
+
+      <header class="header" id="main-header">
+        <nav class="nav-bar">
+          <a href="#" class="nav-link" id="nav-gallery" data-target="gallery">GALLERY</a>
+          <a href="#" class="nav-link" id="nav-about" data-target="about">INFO</a>
+        </nav>
+
+        <div class="header-content">
+            <div class="canvas-3d header-canvas">
+                <img src="/header-image.jpg" alt="Header" class="canvas-image">
+                <div class="header-text">
+                    <h1>JAROSLAV MAREŠ</h1>
+                    <h2>PHOTOGRAPHY</h2>
+                </div>
+            </div>
+            
+            <nav class="elevator-nav">
+                <div class="elevator-btn active" data-floor="0">
+                    <span class="letter">P</span><span class="reveal">ORTRAITS</span>
+                </div>
+                <div class="elevator-btn" data-floor="1">
+                    <span class="letter">A</span><span class="reveal">RCHITECTURE</span>
+                </div>
+                <div class="elevator-btn" data-floor="2">
+                    <span class="letter">N</span><span class="reveal">ATURE</span>
+                </div>
+                <div class="elevator-btn" data-floor="3">
+                    <span class="letter">A</span><span class="reveal">RTISTIC</span>
+                </div>
+            </nav>
+
+            <div id="floor-display">PORTRAITS</div>
+        </div>
+      </header>
+
+      <main class="gallery-section" id="gallery-wrapper">
+        <div class="gallery-track-wrapper">
+            <div class="gallery-track" id="gallery-track">
+                </div>
+        </div>
+      </main>
+
+      <footer class="footer-section" id="main-footer">
+        <p>
+            EMAIL: <span class="copy-text" data-copy="jaroslavmaress@sezanam.cz">jaroslavmaress@sezanam.cz</span> 
+            &nbsp;•&nbsp; 
+            INSTAGRAM: <span class="copy-text" data-copy="slawq.raw">@slawq.raw</span>
+        </p>
+      </footer>
+
+      <div id="image-modal" class="modal">
+          <span class="close-modal">&times;</span>
+          <div class="modal-canvas-wrapper">
+              <img class="modal-content" id="modal-image">
+          </div>
+          <div class="modal-bottom-controls">
+              <div class="modal-nav nav-prev">&lt;</div>
+              <div id="modal-caption"></div>
+              <div class="modal-nav nav-next">&gt;</div>
+          </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
