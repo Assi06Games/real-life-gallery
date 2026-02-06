@@ -5,7 +5,6 @@ import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 gsap.registerPlugin(MotionPathPlugin);
 
 // --- GALLERY CONTENT ARRAYS ---
-// Add or remove items here to update the floors automatically.
 const portraitImages = [
   { title: "SOLACE", src: "/art1.jpg" },
   { title: "ROMA", src: "/art2.jpg" },
@@ -40,7 +39,6 @@ const artisticImages = [
   { title: "ECHO", src: "/art4.jpg" }
 ];
 
-// Map the arrays to the floor structure
 const floorData = [
   { id: "portrait", label: "PORTRAITS", items: portraitImages },
   { id: "arch", label: "ARCHITECTURE", items: architectureImages },
@@ -57,6 +55,8 @@ const globalDimmer = document.getElementById('global-dimmer');
 const mainHeader = document.getElementById('main-header');
 const floorDisplay = document.getElementById('floor-display');
 const elevatorBtns = document.querySelectorAll('.elevator-btn');
+const pricingLink = document.getElementById('pricing-link');
+const pricingSection = document.getElementById('pricing-section');
 
 const beamSVG = `
 <svg viewBox="0 0 350 600" preserveAspectRatio="none" style="width:100%; height:100%;">
@@ -217,7 +217,6 @@ function animateScroll() {
     requestAnimationFrame(animateScroll);
 }
 
-// Initialization
 loadFloor(0);
 animateScroll();
 
@@ -230,7 +229,6 @@ elevatorBtns.forEach((btn) => {
     });
 });
 
-// Searchlight & UI Logic
 const navGallery = document.getElementById('nav-gallery');
 const navAbout = document.getElementById('nav-about');
 const footer = document.getElementById('main-footer');
@@ -245,7 +243,7 @@ function moveDimmerHole(element, opacity, size) {
     gsap.to(globalDimmer, { opacity: opacity, '--size': `${size}px`, duration: 0.4, ease: "power2.out", overwrite: true });
 }
 
-[navGallery, navAbout].forEach(link => {
+[navGallery, navAbout, pricingLink].forEach(link => {
     link.addEventListener('mouseenter', () => {
         if (searchTl || window.matchMedia("(pointer: coarse)").matches) return;
         moveDimmerHole(link, 0.2, 60);
@@ -346,7 +344,6 @@ copyLinks.forEach(link => {
     });
 });
 
-// Modal Logic
 const modal = document.getElementById('image-modal');
 const modalImg = document.getElementById('modal-image');
 const modalCaption = document.getElementById('modal-caption');
@@ -385,3 +382,43 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') prevImage();
     if (e.key === 'Escape') modal.classList.remove('active');
 });
+
+// Pricing Logic
+const underline = document.createElement('div');
+underline.className = 'pricing-underline';
+pricingLink.appendChild(underline);
+
+pricingLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    togglePricing(true);
+});
+
+pricingSection.addEventListener('click', () => {
+    togglePricing(false);
+});
+
+function togglePricing(isOpen) {
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    if (isOpen) {
+        pricingSection.classList.add('active');
+        pricingLink.classList.add('pricing-active');
+        
+        // Find visible middle items
+        const w = window.innerWidth;
+        const middle = w / 2;
+        let sorted = Array.from(galleryItems).sort((a, b) => {
+            const rectA = a.getBoundingClientRect();
+            const rectB = b.getBoundingClientRect();
+            const distA = Math.abs(middle - (rectA.left + rectA.width/2));
+            const distB = Math.abs(middle - (rectB.left + rectB.width/2));
+            return distA - distB;
+        });
+
+        // Push 3 closest to center
+        sorted.slice(0, 3).forEach(item => item.classList.add('gallery-pushed'));
+    } else {
+        pricingSection.classList.remove('active');
+        pricingLink.classList.remove('pricing-active');
+        galleryItems.forEach(img => img.classList.remove('gallery-pushed'));
+    }
+}
