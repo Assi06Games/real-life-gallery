@@ -4,55 +4,53 @@ import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 
 gsap.registerPlugin(MotionPathPlugin);
 
+// --- GALLERY CONTENT ARRAYS ---
+// Add or remove items here to update the floors automatically.
+const portraitImages = [
+  { title: "SOLACE", src: "/art1.jpg" },
+  { title: "ROMA", src: "/art2.jpg" },
+  { title: "THE ROAD AHEAD", src: "/art3.jpg" },
+  { title: "THE ACADEMY", src: "/art4.jpg" },
+  { title: "GEOMETRY", src: "/art5.jpg" },
+  { title: "GEOMETRY", src: "/art5.jpg" },
+  { title: "GEOMETRY", src: "/art5.jpg" }
+];
+
+const architectureImages = [
+  { title: "CONCRETE", src: "/art5.jpg" },
+  { title: "STRUCTURE", src: "/art4.jpg" },
+  { title: "LINES", src: "/art1.jpg" },
+  { title: "SHADOW", src: "/art3.jpg" },
+  { title: "FORM", src: "/art2.jpg" }
+];
+
+const natureImages = [
+  { title: "MIST", src: "/art2.jpg" },
+  { title: "LEAVES", src: "/art1.jpg" },
+  { title: "FOREST", src: "/art4.jpg" },
+  { title: "WAVES", src: "/art5.jpg" },
+  { title: "SUNSET", src: "/art3.jpg" }
+];
+
+const artisticImages = [
+  { title: "NOISE", src: "/art3.jpg" },
+  { title: "GRAIN", src: "/art5.jpg" },
+  { title: "BLUR", src: "/art2.jpg" },
+  { title: "DISTORT", src: "/art1.jpg" },
+  { title: "ECHO", src: "/art4.jpg" }
+];
+
+// Map the arrays to the floor structure
 const floorData = [
-  { 
-    id: "portrait", 
-    label: "PORTRAITS", 
-    items: [
-      { title: "SOLACE", src: "/art1.jpg" },
-      { title: "ROMA", src: "/art2.jpg" },
-      { title: "THE ROAD AHEAD", src: "/art3.jpg" },
-      { title: "THE ACADEMY", src: "/art4.jpg" },
-      { title: "GEOMETRY", src: "/art5.jpg" }
-    ]
-  },
-  { 
-    id: "arch", 
-    label: "ARCHITECTURE", 
-    items: [
-      { title: "CONCRETE", src: "/art5.jpg" },
-      { title: "STRUCTURE", src: "/art4.jpg" },
-      { title: "LINES", src: "/art1.jpg" },
-      { title: "SHADOW", src: "/art3.jpg" },
-      { title: "FORM", src: "/art2.jpg" }
-    ]
-  },
-  { 
-    id: "nature", 
-    label: "NATURE", 
-    items: [
-      { title: "MIST", src: "/art2.jpg" },
-      { title: "LEAVES", src: "/art1.jpg" },
-      { title: "FOREST", src: "/art4.jpg" },
-      { title: "WAVES", src: "/art5.jpg" },
-      { title: "SUNSET", src: "/art3.jpg" }
-    ]
-  },
-  { 
-    id: "artistic", 
-    label: "ARTISTIC", 
-    items: [
-      { title: "NOISE", src: "/art3.jpg" },
-      { title: "GRAIN", src: "/art5.jpg" },
-      { title: "BLUR", src: "/art2.jpg" },
-      { title: "DISTORT", src: "/art1.jpg" },
-      { title: "ECHO", src: "/art4.jpg" }
-    ]
-  }
+  { id: "portrait", label: "PORTRAITS", items: portraitImages },
+  { id: "arch", label: "ARCHITECTURE", items: architectureImages },
+  { id: "nature", label: "NATURE", items: natureImages },
+  { id: "artistic", label: "ARTISTIC", items: artisticImages }
 ];
 
 let currentFloorItems = [];
 let activeControllers = [];
+let currentFloorIndex = 0;
 
 const galleryTrack = document.getElementById('gallery-track');
 const globalDimmer = document.getElementById('global-dimmer');
@@ -123,7 +121,6 @@ class GalleryItemController {
 
     buildTimeline() {
         this.timeline = gsap.timeline({ paused: true, defaults: { ease: "none", overwrite: true } });
-
         const speed = 1666; 
         const distToTop = 60; 
         const imageHeight = 240;
@@ -151,20 +148,17 @@ class GalleryItemController {
 function loadFloor(floorIndex) {
     const data = floorData[floorIndex];
     if(!data) return;
+    currentFloorIndex = floorIndex;
 
     gsap.to(galleryTrack, { opacity: 0, duration: 0.3, onComplete: () => {
-        activeControllers.forEach(c => {
-            if(c.timeline) c.timeline.kill();
-        });
+        activeControllers.forEach(c => { if(c.timeline) c.timeline.kill(); });
         activeControllers = [];
         galleryTrack.innerHTML = '';
-
         scrollX = 0;
         targetX = 0;
         gsap.set(galleryTrack, { x: 0 });
 
         floorDisplay.innerText = data.label;
-
         currentFloorItems = [...data.items, ...data.items, ...data.items];
 
         currentFloorItems.forEach((art, index) => {
@@ -177,17 +171,6 @@ function loadFloor(floorIndex) {
     }});
 }
 
-loadFloor(0);
-
-elevatorBtns.forEach((btn) => {
-    btn.addEventListener('click', function() {
-        elevatorBtns.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        const floorIndex = parseInt(this.getAttribute('data-floor'));
-        loadFloor(floorIndex);
-    });
-});
-
 let scrollX = 0;
 let targetX = 0;
 let singleSetWidth = 0;
@@ -196,7 +179,8 @@ let touchStartX = 0;
 let touchLastX = 0;
 
 function updateLayoutMetrics() {
-    const count = floorData[0].items.length; 
+    const currentItems = floorData[currentFloorIndex].items;
+    const count = currentItems.length; 
     const w = window.innerWidth;
     let itemWidth = 350;
     let gap = 300;
@@ -208,7 +192,6 @@ function updateLayoutMetrics() {
 }
 
 window.addEventListener('resize', updateLayoutMetrics);
-
 window.addEventListener('wheel', (e) => { targetX += e.deltaY; }, { passive: true });
 
 document.addEventListener('touchstart', (e) => {
@@ -233,8 +216,21 @@ function animateScroll() {
     gsap.set(galleryTrack, { x: -wrappedX });
     requestAnimationFrame(animateScroll);
 }
+
+// Initialization
+loadFloor(0);
 animateScroll();
 
+elevatorBtns.forEach((btn) => {
+    btn.addEventListener('click', function() {
+        elevatorBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const floorIndex = parseInt(this.getAttribute('data-floor'));
+        loadFloor(floorIndex);
+    });
+});
+
+// Searchlight & UI Logic
 const navGallery = document.getElementById('nav-gallery');
 const navAbout = document.getElementById('nav-about');
 const footer = document.getElementById('main-footer');
@@ -244,24 +240,19 @@ function moveDimmerHole(element, opacity, size) {
     const rect = element.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-
     globalDimmer.style.setProperty('--lx', `${centerX}px`);
     globalDimmer.style.setProperty('--ly', `${centerY}px`);
-    
     gsap.to(globalDimmer, { opacity: opacity, '--size': `${size}px`, duration: 0.4, ease: "power2.out", overwrite: true });
 }
 
 [navGallery, navAbout].forEach(link => {
     link.addEventListener('mouseenter', () => {
-        if (searchTl) return; 
-        if (window.matchMedia("(pointer: coarse)").matches) return;
+        if (searchTl || window.matchMedia("(pointer: coarse)").matches) return;
         moveDimmerHole(link, 0.2, 60);
         gsap.to(link, { color: "#fff", textShadow: "0 0 20px rgba(255,255,255,0.8)", duration: 0.3, overwrite: true });
     });
-
     link.addEventListener('mouseleave', () => {
-        if (searchTl) return;
-        if (window.matchMedia("(pointer: coarse)").matches) return;
+        if (searchTl || window.matchMedia("(pointer: coarse)").matches) return;
         gsap.to(globalDimmer, { opacity: 0, '--size': '0px', duration: 0.4, overwrite: true });
         gsap.to(link, { color: "#222", textShadow: "0 2px 5px rgba(0,0,0,0.2)", duration: 0.4, overwrite: true });
     });
@@ -273,7 +264,6 @@ function runSearchlightSequence(startElement, targetType) {
     const h = window.innerHeight;
     const isMobile = w <= 768;
     const targetSize = isMobile ? 150 : 250;
-
     const startRect = startElement.getBoundingClientRect();
     const startX = startRect.left + startRect.width / 2;
     const startY = startRect.top + startRect.height / 2;
@@ -304,14 +294,11 @@ function runSearchlightSequence(startElement, targetType) {
     const bottomCorners = [{x: w*0.1, y: h*0.9}, {x: w*0.9, y: h*0.9}];
     const corner1 = topCorners[Math.floor(Math.random() * 2)];
     const corner2 = bottomCorners[Math.floor(Math.random() * 2)];
-    corner1.x += (Math.random() * 100) - 50;
-    corner2.x += (Math.random() * 100) - 50;
 
     gsap.to(mainHeader, { opacity: 0.05, duration: 0.8, overwrite: true });
     gsap.to(startElement, { color: "#222", textShadow: "0 2px 5px rgba(0,0,0,0.2)", duration: 0.4, overwrite: true });
     
     const proxy = { x: startX, y: startY, size: 60, opacity: 0.2 };
-    
     const updateDimmer = () => {
         globalDimmer.style.setProperty('--lx', `${proxy.x}px`);
         globalDimmer.style.setProperty('--ly', `${proxy.y}px`);
@@ -359,6 +346,7 @@ copyLinks.forEach(link => {
     });
 });
 
+// Modal Logic
 const modal = document.getElementById('image-modal');
 const modalImg = document.getElementById('modal-image');
 const modalCaption = document.getElementById('modal-caption');
