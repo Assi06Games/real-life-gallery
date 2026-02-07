@@ -21,7 +21,6 @@ const architectureImages = [
     { title: "FORM", src: "/art2.jpg" }
 ];
 
-// Renamed from Nature to Product
 const productImages = [
     { title: "MIST", src: "/art2.jpg" },
     { title: "LEAVES", src: "/art1.jpg" },
@@ -77,7 +76,7 @@ const pricingConfigs = [
 const floorData = [
   { id: "portrait", label: "PORTRÉTY", items: portraitImages },
   { id: "arch", label: "ARCHITEKTURA", items: architectureImages },
-  { id: "product", label: "FILM", items: productImages }, // Updated Label
+  { id: "product", label: "FILM", items: productImages },
   { id: "artistic", label: "ARTISTIC", items: artisticImages }
 ];
 
@@ -86,6 +85,8 @@ let currentFloorItems = [];
 let activeControllers = [];
 let currentFloorIndex = 0;
 let isPricingOpen = false;
+// New state to synchronize pushing effect. 0 = closed, 1 = open.
+const pricingState = { progress: 0 }; 
 
 // Scroll State
 let scrollX = 0;
@@ -94,7 +95,6 @@ let singleSetWidth = 0;
 let isDragging = false;
 let touchStartX = 0;
 let touchLastX = 0;
-let maxScroll = 0;
 
 // DOM Elements
 const galleryTrack = document.getElementById('gallery-track');
@@ -278,42 +278,56 @@ function updateTransformations() {
     const panelWidth = w <= 768 ? w * 0.95 : 900; 
     const halfPanel = panelWidth / 2;
     const ramp = 200; 
+    
+    // 1. Update Pricing Panel Position based on progress
+    const currentProgress = pricingState.progress;
+    const panelStartY = 350; // How far down it starts
+    const currentPanelY = panelStartY * (1 - currentProgress);
+    
+    // Map opacity for smoother entry
+    let panelOpacity = currentProgress * 2; 
+    if(panelOpacity > 1) panelOpacity = 1;
 
+    if (pricingPanel) {
+         if (currentProgress > 0.001) {
+            gsap.set(pricingPanel, { y: currentPanelY, opacity: panelOpacity, pointerEvents: 'auto' });
+         } else {
+            // Ensure it's firmly "off" when closed
+            gsap.set(pricingPanel, { y: panelStartY, opacity: 0, pointerEvents: 'none' });
+         }
+    }
+
+    // 2. Update Gallery Items based on distance AND progress
     activeControllers.forEach(controller => {
-        let pricingY = 0;
-        let pricingScale = 1;
-        let lightCorrection = 0;
+        const rect = controller.element.getBoundingClientRect();
+        const itemCenter = rect.left + rect.width / 2;
+        const distFromCenter = Math.abs(itemCenter - center);
+        let proximityFactor = 0; 
 
-        if (isPricingOpen) {
-            const rect = controller.element.getBoundingClientRect();
-            const itemCenter = rect.left + rect.width / 2;
-            const distFromCenter = Math.abs(itemCenter - center);
-            let progress = 0; 
-
-            if (distFromCenter < halfPanel) {
-                progress = 1;
-            } else if (distFromCenter < halfPanel + ramp) {
-                const rampPos = distFromCenter - halfPanel;
-                progress = 1 - (rampPos / ramp);
-            } else {
-                progress = 0;
-            }
-
-            progress = Math.max(0, Math.min(1, progress));
-            const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-
-            if (progress > 0) {
-                pricingY = -250 * eased; 
-                pricingScale = 1 - (0.3 * eased);
-                lightCorrection = -60 * eased; 
-            }
+        if (distFromCenter < halfPanel) {
+            proximityFactor = 1;
+        } else if (distFromCenter < halfPanel + ramp) {
+            const rampPos = distFromCenter - halfPanel;
+            proximityFactor = 1 - (rampPos / ramp);
+        } else {
+            proximityFactor = 0;
         }
+
+        proximityFactor = Math.max(0, Math.min(1, proximityFactor));
+        // Easing for the proximity calculation
+        const easedProximity = proximityFactor < 0.5 ? 2 * proximityFactor * proximityFactor : 1 - Math.pow(-2 * proximityFactor + 2, 2) / 2;
+
+        // Combine proximity with total pricing progress for synchronization
+        const pricingY = -250 * easedProximity * currentProgress;
+        const pricingScale = 1 - (0.3 * easedProximity * currentProgress);
+        const lightCorrection = -60 * easedProximity * currentProgress;
 
         const totalY = pricingY + controller.hoverLift;
         
         gsap.set(controller.canvas, { y: totalY, scale: pricingScale });
         gsap.set(controller.lightFixture, { y: totalY + lightCorrection, scale: pricingScale, opacity: 1 });
-        gsap.set(controller.title, { y: totalY, opacity: isPricingOpen ? (pricingY !== 0 ? 0.7 : 0.3) : 0.5 });
+        // Fade titles out as they get lifted
+        gsap.set(controller.title, { y: totalY, opacity: 1 - (easedProximity * currentProgress * 0.7) });
     });
 }
 
@@ -503,11 +517,28 @@ function togglePricing(isOpen) {
         body.classList.add('pricing-mode-active');
         pricingLink.classList.add('pricing-active');
         headerContent.classList.add('header-faded');
+        
+        // Animate state progress to 1 (Open)
+        gsap.to(pricingState, { 
+            progress: 1,
+            duration: 1, 
+            ease: "expo.out", 
+            overwrite: true 
+        });
+
     } else {
         body.classList.remove('pricing-mode-active');
         pricingLink.classList.remove('pricing-active');
         headerContent.classList.remove('header-faded');
         resetGalleryPositions();
+
+        // Animate state progress to 0 (Closed)
+        gsap.to(pricingState, { 
+            progress: 0,
+            duration: 0.8, 
+            ease: "power2.inOut", 
+            overwrite: true 
+        });
     }
 }
 

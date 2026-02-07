@@ -1,4 +1,3 @@
-
 :root {
   --wall-inner: #d6d6d6;
   --wall-outer: #a6a6a6;
@@ -249,16 +248,13 @@ body.pricing-mode-active .gallery-track-wrapper {
         0 20px 50px rgba(0,0,0,0.1), 
         inset 0 1px 0 rgba(255,255,255,0.6);
     opacity: 0;
-    transform: translateY(100px) scale(0.95);
-    transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Initial transform removed - controlled by JS loop */
     pointer-events: none;
     cursor: pointer; /* Indicates whole area closes */
 }
 
 /* Active State for Pricing */
 .pricing-mode-active .pricing-glass-panel {
-    opacity: 1;
-    transform: translateY(0) scale(1);
     pointer-events: auto;
 }
 
@@ -334,14 +330,39 @@ body.pricing-mode-active .gallery-track-wrapper {
     transform: translateX(-50%) translateY(5px); /* Bob down effect */
 }
 
-/* --- FOOTER --- */
+/* --- FOOTER (NEW GLASS STYLE) --- */
 .footer-section {
-    position: fixed; bottom: 0; width: 100%; height: 60px;
+    position: fixed; bottom: 30px; 
+    width: 100%; 
+    height: auto;
     display: flex; justify-content: center; align-items: center;
-    font-size: 11px; letter-spacing: 2px; color: #444; z-index: 50;
-    background: linear-gradient(to top, rgba(255,255,255,0.8), transparent);
-    text-align: center; padding: 0 20px;
+    z-index: 50;
+    pointer-events: none; /* Let clicks pass through outside the pill */
 }
+
+.footer-glass {
+    pointer-events: auto;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px) saturate(120%);
+    -webkit-backdrop-filter: blur(15px) saturate(120%);
+    border: 1px solid var(--glass-border);
+    padding: 15px 40px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    
+    /* Text styling */
+    font-size: 11px; 
+    letter-spacing: 2px; 
+    color: #444;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.footer-glass:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
 .copy-text { cursor: pointer; display: inline-block; transition: color 0.3s; }
 .copy-text:hover { color: #000; text-shadow: 0 0 10px rgba(0,0,0,0.1); }
 
@@ -395,8 +416,11 @@ body.pricing-mode-active .gallery-track-wrapper {
     .gallery-item { width: 260px; }
     .gallery-canvas { width: 260px; height: 180px; }
     .gallery-track { padding-left: 50vw; } 
-    .footer-section { font-size: 9px; height: 50px; }
     
+    /* Footer Mobile Adjustments */
+    .footer-section { bottom: 20px; }
+    .footer-glass { padding: 12px 20px; font-size: 9px; width: 90%; max-width: 300px; }
+
     /* Pricing Mobile Adjustments */
     .pricing-glass-panel { width: 95%; }
     .pricing-content { flex-direction: column; padding: 20px; gap: 20px; }
