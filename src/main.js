@@ -39,7 +39,6 @@ const artisticImages = [
 
 // --- PRICING DATA CONFIGURATION ---
 const pricingConfigs = [
-    // 0: Portraits
     {
         type: 'cards',
         items: [
@@ -48,7 +47,6 @@ const pricingConfigs = [
             { title: 'PREMIUM', features: ['4 HOUR SHOOT', '3 LARGE PRINTS', 'PHOTO ALBUM'], price: '9000 CZK', accent: false }
         ]
     },
-    // 1: Architecture
     {
         type: 'cards',
         items: [
@@ -57,7 +55,6 @@ const pricingConfigs = [
             { title: 'COMMERCIAL', features: ['FULL DAY', 'UNLIMITED PHOTOS', 'LICENSING'], price: '15000 CZK', accent: false }
         ]
     },
-    // 2: Product
     {
         type: 'cards',
         items: [
@@ -66,10 +63,9 @@ const pricingConfigs = [
             { title: 'CAMPAIGN', features: ['FULL BRAND IDENTITY', 'ART DIRECTION', 'MODELS INCLUDED'], price: '12000 CZK', accent: false }
         ]
     },
-    // 3: Artistic (Text Only)
     {
         type: 'text',
-        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
     }
 ];
 
@@ -85,10 +81,9 @@ let currentFloorItems = [];
 let activeControllers = [];
 let currentFloorIndex = 0;
 let isPricingOpen = false;
-// New state to synchronize pushing effect. 0 = closed, 1 = open.
+let isElevatorAnimating = false;
 const pricingState = { progress: 0 }; 
 
-// Scroll State
 let scrollX = 0;
 let targetX = 0;
 let singleSetWidth = 0;
@@ -122,7 +117,6 @@ const beamSVG = `
     <path class="beam-path" d="M 0 0 L 350 0 L 350 600 L 0 600 Z" fill="url(#beam-item-grad)" filter="url(#beam-blur)" />
 </svg>`;
 
-// REMOVED fixed width style here to let CSS control it smoothly
 const hardwareSVG = `
 <svg class="light-fixture-svg" viewBox="0 0 350 20" preserveAspectRatio="xMidYMin slice">
     <rect x="165" y="0" width="20" height="8" rx="1" class="brass-rect" />
@@ -141,7 +135,6 @@ class GalleryItemController {
         this.element = this.createDOM();
         this.container.appendChild(this.element);
         
-        // References
         this.beamContainer = this.element.querySelector('.beam-container');
         this.lightFixture = this.element.querySelector('.gallery-light-fixture');
         this.colorLayer = this.element.querySelector('.color-layer');
@@ -150,7 +143,6 @@ class GalleryItemController {
         this.title = this.element.querySelector('.art-title');
         
         this.hoverLift = 0; 
-        
         this.timeline = null;
         this.buildTimeline(); 
         this.initEvents();
@@ -179,8 +171,8 @@ class GalleryItemController {
         this.timeline = gsap.timeline({ paused: true, defaults: { ease: "none", overwrite: false } }); 
         const speed = 1666; 
         const distToTop = 60; 
-        const imageHeight = 225; // Updated height based on new CSS
-        const totalBeamDist = 470; // Updated based on new fixture height
+        const imageHeight = 225; 
+        const totalBeamDist = 470; 
         const timeToHitTop = distToTop / speed; 
         const timeToFillImage = imageHeight / speed; 
         const totalTime = totalBeamDist / speed; 
@@ -245,7 +237,6 @@ function updateLayoutMetrics() {
     const currentItems = currentFloorItems;
     const count = currentItems.length; 
     const w = window.innerWidth;
-    // Updated width metrics based on new CSS sizes
     let itemWidth = 330;
     let gap = 300;
     if (w <= 768) { itemWidth = 245; gap = 50; } 
@@ -255,19 +246,11 @@ function updateLayoutMetrics() {
     singleSetWidth = (itemWidth + gap) * (count / 3); 
 }
 
-// --- ANIMATION LOOP (THE ENGINE) ---
-
+// --- ANIMATION LOOP ---
 function animateScroll() {
     scrollX += (targetX - scrollX) * 0.1;
-    
-    // Infinite Loop Logic
-    if (scrollX >= singleSetWidth) {
-        scrollX -= singleSetWidth;
-        targetX -= singleSetWidth;
-    } else if (scrollX < 0) {
-        scrollX += singleSetWidth;
-        targetX += singleSetWidth;
-    }
+    if (scrollX >= singleSetWidth) { scrollX -= singleSetWidth; targetX -= singleSetWidth; }
+    else if (scrollX < 0) { scrollX += singleSetWidth; targetX += singleSetWidth; }
 
     gsap.set(galleryTrack, { x: -scrollX });
     updateTransformations();
@@ -280,10 +263,8 @@ function updateTransformations() {
     const panelWidth = w <= 768 ? w * 0.95 : 900; 
     const halfPanel = panelWidth / 2;
     const ramp = 200; 
-    
     const currentProgress = pricingState.progress;
 
-    // 1. Update Pricing Panel Position
     const panelStartY = 350;
     const currentPanelY = panelStartY * (1 - currentProgress);
     let panelOpacity = currentProgress * 2; 
@@ -297,35 +278,27 @@ function updateTransformations() {
          }
     }
 
-    // Define base lift to avoid footer when pricing is closed
     const footerAvoidanceY = -40; 
 
-    // 2. Update Gallery Items based on distance AND progress
     activeControllers.forEach(controller => {
         const rect = controller.element.getBoundingClientRect();
         const itemCenter = rect.left + rect.width / 2;
         const distFromCenter = Math.abs(itemCenter - center);
         let proximityFactor = 0; 
 
-        if (distFromCenter < halfPanel) {
-            proximityFactor = 1;
-        } else if (distFromCenter < halfPanel + ramp) {
+        if (distFromCenter < halfPanel) { proximityFactor = 1; } 
+        else if (distFromCenter < halfPanel + ramp) {
             const rampPos = distFromCenter - halfPanel;
             proximityFactor = 1 - (rampPos / ramp);
-        } else {
-            proximityFactor = 0;
         }
 
         proximityFactor = Math.max(0, Math.min(1, proximityFactor));
         const easedProximity = proximityFactor < 0.5 ? 2 * proximityFactor * proximityFactor : 1 - Math.pow(-2 * proximityFactor + 2, 2) / 2;
 
-        // Calculate pricing specific lifts
         const pricingLiftY = -250 * easedProximity;
         const pricingScaleTarget = 1 - (0.3 * easedProximity);
         const pricingLightCorrection = -60 * easedProximity;
 
-        // BLEND based on progress.
-        // If progress is 0 (closed), use footerAvoidanceY. If 1 (open), use pricingLiftY.
         const currentYState = (footerAvoidanceY * (1 - currentProgress)) + (pricingLiftY * currentProgress);
         const currentScaleState = (1 * (1 - currentProgress)) + (pricingScaleTarget * currentProgress);
         const currentLightState = (0 * (1 - currentProgress)) + (pricingLightCorrection * currentProgress);
@@ -334,7 +307,6 @@ function updateTransformations() {
         
         gsap.set(controller.canvas, { y: totalY, scale: currentScaleState });
         gsap.set(controller.lightFixture, { y: totalY + currentLightState, scale: currentScaleState, opacity: 1 });
-        // Fade titles out as they get lifted by pricing, but not by footer lift
         gsap.set(controller.title, { y: totalY, opacity: 1 - (easedProximity * currentProgress * 0.7) });
     });
 }
@@ -345,39 +317,70 @@ function resetGalleryPositions() {
     });
 }
 
-// --- EVENTS ---
-
-window.addEventListener('resize', updateLayoutMetrics);
-window.addEventListener('wheel', (e) => { 
-    const factor = isPricingOpen ? 0.9 : 1.0;
-    targetX += e.deltaY * factor; 
-}, { passive: true });
-
-document.addEventListener('touchstart', (e) => {
-    isDragging = true;
-    touchStartX = e.touches[0].clientX;
-    touchLastX = touchStartX;
-}, { passive: true });
-
-document.addEventListener('touchmove', (e) => {
-    if (!isDragging) return;
-    const currentX = e.touches[0].clientX;
-    const delta = touchLastX - currentX; 
-    touchLastX = currentX;
-    const factor = isPricingOpen ? 1.5 : 2.0;
-    targetX += delta * factor; 
-}, { passive: true });
-
-document.addEventListener('touchend', () => { isDragging = false; });
-
-// Navigation Logic
+// --- UPDATED ELEVATOR LOGIC (CABLE PHYSICS / NO RESET) ---
 elevatorBtns.forEach((btn) => {
     btn.addEventListener('click', function() {
-        if(isPricingOpen) togglePricing(false); // Close pricing when changing floors
+        const targetIndex = parseInt(this.getAttribute('data-floor'));
+        if (targetIndex === currentFloorIndex || isElevatorAnimating) return;
+        
+        isElevatorAnimating = true;
+        if(isPricingOpen) togglePricing(false);
+
+        // Update active class on buttons visually (final state)
         elevatorBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-        const floorIndex = parseInt(this.getAttribute('data-floor'));
-        loadFloor(floorIndex);
+
+        // Determine Direction
+        const direction = targetIndex > currentFloorIndex ? 'down' : 'up';
+        
+        // We do NOT reset all dots here. We ONLY modify the path between current and target.
+        // This ensures the "cable" stays connected from the top.
+        
+        let dotsInPath = [];
+
+        if (direction === 'down') {
+            // Going DOWN: We are extending the cable.
+            // We need to light up dots in the shafts starting from current floor down to target.
+            // Loop shafts top-to-bottom.
+            for (let i = currentFloorIndex; i < targetIndex; i++) {
+                const shaft = document.querySelector(`.elevator-shaft[data-shaft-idx="${i}"]`);
+                if(shaft) {
+                    // Collect dots in natural DOM order (top-to-bottom)
+                    dotsInPath.push(...Array.from(shaft.querySelectorAll('.elevator-dot')));
+                }
+            }
+        } else {
+            // Going UP: We are retracting the cable.
+            // We need to turn OFF dots starting from the bottom (current) up to target.
+            // Loop shafts bottom-to-top.
+            for (let i = currentFloorIndex - 1; i >= targetIndex; i--) {
+                const shaft = document.querySelector(`.elevator-shaft[data-shaft-idx="${i}"]`);
+                if(shaft) {
+                    const dots = Array.from(shaft.querySelectorAll('.elevator-dot'));
+                    // Reverse dots to animate bottom-to-top retraction
+                    dotsInPath.push(...dots.reverse());
+                }
+            }
+        }
+
+        const stepTime = 150; 
+        
+        dotsInPath.forEach((dot, index) => {
+            setTimeout(() => {
+                if (direction === 'down') {
+                    dot.classList.add('active'); // Add light
+                } else {
+                    dot.classList.remove('active'); // Remove light
+                }
+            }, index * stepTime);
+        });
+
+        // Trigger loadFloor after animation finishes
+        const totalDuration = dotsInPath.length * stepTime;
+        setTimeout(() => {
+            loadFloor(targetIndex);
+            isElevatorAnimating = false;
+        }, totalDuration + 100);
     });
 });
 
@@ -470,14 +473,12 @@ pricingLink.appendChild(underline);
 
 function generatePricingContent(floorIdx) {
     const config = pricingConfigs[floorIdx];
-    pricingContentArea.innerHTML = ''; // Clear previous
+    pricingContentArea.innerHTML = ''; 
 
     if (config.type === 'cards') {
         config.items.forEach(item => {
             const card = document.createElement('div');
             card.className = `pricing-card ${item.accent ? 'accent-card' : ''}`;
-            
-            // Add optional accent glow
             if (item.accent) {
                 const glow = document.createElement('div');
                 glow.className = 'card-glow';
@@ -486,7 +487,6 @@ function generatePricingContent(floorIdx) {
 
             const title = document.createElement('h3');
             title.innerText = item.title;
-            
             const ul = document.createElement('ul');
             item.features.forEach(feat => {
                 const li = document.createElement('li');
@@ -501,7 +501,6 @@ function generatePricingContent(floorIdx) {
             card.appendChild(title);
             card.appendChild(ul);
             card.appendChild(price);
-            
             pricingContentArea.appendChild(card);
         });
     } else if (config.type === 'text') {
@@ -524,76 +523,48 @@ function togglePricing(isOpen) {
         pricingLink.classList.add('pricing-active');
         headerContent.classList.add('header-faded');
         
-        gsap.to(pricingState, { 
-            progress: 1,
-            duration: 1, 
-            ease: "expo.out", 
-            overwrite: true 
-        });
-
+        gsap.to(pricingState, { progress: 1, duration: 1, ease: "expo.out", overwrite: true });
     } else {
         body.classList.remove('pricing-mode-active');
         pricingLink.classList.remove('pricing-active');
         headerContent.classList.remove('header-faded');
         resetGalleryPositions();
 
-        gsap.to(pricingState, { 
-            progress: 0,
-            duration: 0.8, 
-            ease: "power2.inOut", 
-            overwrite: true 
-        });
+        gsap.to(pricingState, { progress: 0, duration: 0.8, ease: "power2.inOut", overwrite: true });
     }
 }
 
-pricingLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    togglePricing(!isPricingOpen);
-});
-
-if(pricingPanel) {
-    pricingPanel.addEventListener('click', () => {
-        togglePricing(false);
-    });
-}
-
+pricingLink.addEventListener('click', (e) => { e.preventDefault(); togglePricing(!isPricingOpen); });
+if(pricingPanel) { pricingPanel.addEventListener('click', () => { togglePricing(false); }); }
 document.addEventListener('click', (e) => {
     if(isPricingOpen && e.clientY < window.innerHeight * 0.3 && !e.target.closest('.nav-link') && !e.target.closest('.pricing-glass-panel')) {
         togglePricing(false);
     }
 });
 
-// --- NEW FOOTER LOGIC (ICON SWAP ANIMATION) ---
+// --- FOOTER LOGIC ---
 document.querySelectorAll('.copy-trigger').forEach(trigger => {
     trigger.addEventListener('click', function(e) {
         e.stopPropagation();
         const textToCopy = this.getAttribute('data-copy');
         
         navigator.clipboard.writeText(textToCopy).then(() => {
-            // Visual Feedback: Icon Swap
             const normalIcon = this.querySelector('.normal-state');
             const verifiedIcon = this.querySelector('.verified-state');
             
             if (!normalIcon || !verifiedIcon) return;
 
             const tl = gsap.timeline();
-            
-            // Swap icons out quickly
             tl.to(normalIcon, { scale: 0, opacity: 0, duration: 0.2, ease: "back.in(1.7)" })
               .set(normalIcon, { display: 'none' })
               .set(verifiedIcon, { display: 'block', scale: 0, opacity: 0 })
-              // Pop verified icon in
               .to(verifiedIcon, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" })
-              // Wait
               .to(verifiedIcon, { scale: 0, opacity: 0, duration: 0.2, ease: "back.in(1.7)", delay: 1.5 })
-              // Swap back
               .set(verifiedIcon, { display: 'none' })
               .set(normalIcon, { display: 'block' })
               .to(normalIcon, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
 
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
-        });
+        }).catch(err => { console.error('Failed to copy: ', err); });
     });
 });
 
@@ -637,6 +608,29 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') modal.classList.remove('active');
 });
 
-// Initialization
+// Events
+window.addEventListener('resize', updateLayoutMetrics);
+window.addEventListener('wheel', (e) => { 
+    const factor = isPricingOpen ? 0.9 : 1.0;
+    targetX += e.deltaY * factor; 
+}, { passive: true });
+
+document.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    touchStartX = e.touches[0].clientX;
+    touchLastX = touchStartX;
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const currentX = e.touches[0].clientX;
+    const delta = touchLastX - currentX; 
+    touchLastX = currentX;
+    const factor = isPricingOpen ? 1.5 : 2.0;
+    targetX += delta * factor; 
+}, { passive: true });
+
+document.addEventListener('touchend', () => { isDragging = false; });
+
 loadFloor(0);
 animateScroll();
