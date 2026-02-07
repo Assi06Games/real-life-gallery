@@ -74,10 +74,10 @@ const pricingConfigs = [
 ];
 
 const floorData = [
-  { id: "portrait", label: "PORTRÉTY", items: portraitImages },
-  { id: "arch", label: "ARCHITEKTURA", items: architectureImages },
-  { id: "product", label: "FILM", items: productImages },
-  { id: "artistic", label: "ARTISTIC", items: artisticImages }
+  { id: "portrait", label: "", items: portraitImages },
+  { id: "arch", label: "", items: architectureImages },
+  { id: "product", label: "", items: productImages },
+  { id: "artistic", label: "", items: artisticImages }
 ];
 
 // --- STATE MANAGEMENT ---
@@ -122,8 +122,9 @@ const beamSVG = `
     <path class="beam-path" d="M 0 0 L 350 0 L 350 600 L 0 600 Z" fill="url(#beam-item-grad)" filter="url(#beam-blur)" />
 </svg>`;
 
+// REMOVED fixed width style here to let CSS control it smoothly
 const hardwareSVG = `
-<svg class="light-fixture-svg" viewBox="0 0 350 20" preserveAspectRatio="xMidYMin slice" style="width: 350px; height: 20px;">
+<svg class="light-fixture-svg" viewBox="0 0 350 20" preserveAspectRatio="xMidYMin slice">
     <rect x="165" y="0" width="20" height="8" rx="1" class="brass-rect" />
     <rect x="2" y="6" width="346" height="4" class="brass-rect" />
     <rect x="2" y="5" width="6" height="6" rx="1" class="brass-rect" />
@@ -178,8 +179,8 @@ class GalleryItemController {
         this.timeline = gsap.timeline({ paused: true, defaults: { ease: "none", overwrite: false } }); 
         const speed = 1666; 
         const distToTop = 60; 
-        const imageHeight = 240;
-        const totalBeamDist = 500;
+        const imageHeight = 225; // Updated height based on new CSS
+        const totalBeamDist = 470; // Updated based on new fixture height
         const timeToHitTop = distToTop / speed; 
         const timeToFillImage = imageHeight / speed; 
         const totalTime = totalBeamDist / speed; 
@@ -244,10 +245,11 @@ function updateLayoutMetrics() {
     const currentItems = currentFloorItems;
     const count = currentItems.length; 
     const w = window.innerWidth;
-    let itemWidth = 350;
+    // Updated width metrics based on new CSS sizes
+    let itemWidth = 330;
     let gap = 300;
-    if (w <= 768) { itemWidth = 260; gap = 50; } 
-    else if (w <= 1024) { itemWidth = 300; gap = 200; }
+    if (w <= 768) { itemWidth = 245; gap = 50; } 
+    else if (w <= 1024) { itemWidth = 285; gap = 200; }
     
     galleryTrack.style.gap = `${gap}px`;
     singleSetWidth = (itemWidth + gap) * (count / 3); 
@@ -279,12 +281,11 @@ function updateTransformations() {
     const halfPanel = panelWidth / 2;
     const ramp = 200; 
     
-    // 1. Update Pricing Panel Position based on progress
     const currentProgress = pricingState.progress;
-    const panelStartY = 350; // How far down it starts
+
+    // 1. Update Pricing Panel Position
+    const panelStartY = 350;
     const currentPanelY = panelStartY * (1 - currentProgress);
-    
-    // Map opacity for smoother entry
     let panelOpacity = currentProgress * 2; 
     if(panelOpacity > 1) panelOpacity = 1;
 
@@ -292,10 +293,12 @@ function updateTransformations() {
          if (currentProgress > 0.001) {
             gsap.set(pricingPanel, { y: currentPanelY, opacity: panelOpacity, pointerEvents: 'auto' });
          } else {
-            // Ensure it's firmly "off" when closed
             gsap.set(pricingPanel, { y: panelStartY, opacity: 0, pointerEvents: 'none' });
          }
     }
+
+    // Define base lift to avoid footer when pricing is closed
+    const footerAvoidanceY = -40; 
 
     // 2. Update Gallery Items based on distance AND progress
     activeControllers.forEach(controller => {
@@ -314,19 +317,24 @@ function updateTransformations() {
         }
 
         proximityFactor = Math.max(0, Math.min(1, proximityFactor));
-        // Easing for the proximity calculation
         const easedProximity = proximityFactor < 0.5 ? 2 * proximityFactor * proximityFactor : 1 - Math.pow(-2 * proximityFactor + 2, 2) / 2;
 
-        // Combine proximity with total pricing progress for synchronization
-        const pricingY = -250 * easedProximity * currentProgress;
-        const pricingScale = 1 - (0.3 * easedProximity * currentProgress);
-        const lightCorrection = -60 * easedProximity * currentProgress;
+        // Calculate pricing specific lifts
+        const pricingLiftY = -250 * easedProximity;
+        const pricingScaleTarget = 1 - (0.3 * easedProximity);
+        const pricingLightCorrection = -60 * easedProximity;
 
-        const totalY = pricingY + controller.hoverLift;
+        // BLEND based on progress.
+        // If progress is 0 (closed), use footerAvoidanceY. If 1 (open), use pricingLiftY.
+        const currentYState = (footerAvoidanceY * (1 - currentProgress)) + (pricingLiftY * currentProgress);
+        const currentScaleState = (1 * (1 - currentProgress)) + (pricingScaleTarget * currentProgress);
+        const currentLightState = (0 * (1 - currentProgress)) + (pricingLightCorrection * currentProgress);
+
+        const totalY = currentYState + controller.hoverLift;
         
-        gsap.set(controller.canvas, { y: totalY, scale: pricingScale });
-        gsap.set(controller.lightFixture, { y: totalY + lightCorrection, scale: pricingScale, opacity: 1 });
-        // Fade titles out as they get lifted
+        gsap.set(controller.canvas, { y: totalY, scale: currentScaleState });
+        gsap.set(controller.lightFixture, { y: totalY + currentLightState, scale: currentScaleState, opacity: 1 });
+        // Fade titles out as they get lifted by pricing, but not by footer lift
         gsap.set(controller.title, { y: totalY, opacity: 1 - (easedProximity * currentProgress * 0.7) });
     });
 }
@@ -511,14 +519,11 @@ function togglePricing(isOpen) {
     const body = document.body;
     
     if (isOpen) {
-        // Load the correct content for current floor before showing
         generatePricingContent(currentFloorIndex);
-        
         body.classList.add('pricing-mode-active');
         pricingLink.classList.add('pricing-active');
         headerContent.classList.add('header-faded');
         
-        // Animate state progress to 1 (Open)
         gsap.to(pricingState, { 
             progress: 1,
             duration: 1, 
@@ -532,7 +537,6 @@ function togglePricing(isOpen) {
         headerContent.classList.remove('header-faded');
         resetGalleryPositions();
 
-        // Animate state progress to 0 (Closed)
         gsap.to(pricingState, { 
             progress: 0,
             duration: 0.8, 
@@ -557,6 +561,40 @@ document.addEventListener('click', (e) => {
     if(isPricingOpen && e.clientY < window.innerHeight * 0.3 && !e.target.closest('.nav-link') && !e.target.closest('.pricing-glass-panel')) {
         togglePricing(false);
     }
+});
+
+// --- NEW FOOTER LOGIC (ICON SWAP ANIMATION) ---
+document.querySelectorAll('.copy-trigger').forEach(trigger => {
+    trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const textToCopy = this.getAttribute('data-copy');
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            // Visual Feedback: Icon Swap
+            const normalIcon = this.querySelector('.normal-state');
+            const verifiedIcon = this.querySelector('.verified-state');
+            
+            if (!normalIcon || !verifiedIcon) return;
+
+            const tl = gsap.timeline();
+            
+            // Swap icons out quickly
+            tl.to(normalIcon, { scale: 0, opacity: 0, duration: 0.2, ease: "back.in(1.7)" })
+              .set(normalIcon, { display: 'none' })
+              .set(verifiedIcon, { display: 'block', scale: 0, opacity: 0 })
+              // Pop verified icon in
+              .to(verifiedIcon, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" })
+              // Wait
+              .to(verifiedIcon, { scale: 0, opacity: 0, duration: 0.2, ease: "back.in(1.7)", delay: 1.5 })
+              // Swap back
+              .set(verifiedIcon, { display: 'none' })
+              .set(normalIcon, { display: 'block' })
+              .to(normalIcon, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
+
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    });
 });
 
 // --- MODAL LOGIC ---

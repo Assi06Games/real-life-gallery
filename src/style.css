@@ -5,6 +5,7 @@
   --font-display: 'Jost', sans-serif;
   --font-body: 'Montserrat', sans-serif;
   --active-red: #9e1b32;
+  --verified-green: #2ecc71; /* Added for verified icon */
   --glass-bg: rgba(230, 230, 230, 0.6);
   --glass-border: rgba(255, 255, 255, 0.4);
 }
@@ -150,7 +151,8 @@ html, body {
     z-index: 15; pointer-events: none;
 }
 .gallery-track-wrapper {
-    position: absolute; top: 55%; left: 0; width: 100%; height: 400px; 
+    /* Moved up slightly to create base clearance for footer */
+    position: absolute; top: 52%; left: 0; width: 100%; height: 400px; 
     display: flex; align-items: center; pointer-events: auto;
     transition: top 0.8s cubic-bezier(0.16, 1, 0.3, 1); touch-action: pan-y; 
 }
@@ -160,14 +162,17 @@ body.pricing-mode-active .gallery-track-wrapper {
 }
 
 .gallery-track { display: flex; gap: 300px; padding-left: 50px; will-change: transform; }
+
+/* REDUCED SIZE: Width reduced from 350px to 330px (~5-7% smaller) */
 .gallery-item {
     position: relative; flex-shrink: 0; 
     display: flex; flex-direction: column; align-items: center;
-    width: 350px;
+    width: 330px; 
 }
 
+/* Fixture height scales with width */
 .gallery-light-fixture {
-    width: 100%; height: 500px;
+    width: 100%; height: 470px; 
     position: absolute; top: -50px; left: 0;
     pointer-events: none; 
     z-index: 30; 
@@ -184,8 +189,10 @@ body.pricing-mode-active .gallery-track-wrapper {
     -webkit-mask-image: linear-gradient(to bottom, black 0%, black 100%);
     opacity: 0.2; transform-origin: top center;
 }
+
+/* REDUCED SIZE: Height reduced from 240px to 225px */
 .gallery-canvas {
-    width: 350px; height: 240px; 
+    width: 100%; height: 225px;
     position: relative; cursor: pointer; 
     z-index: 20; /* Lower than fixture */
     background: #000;
@@ -330,14 +337,14 @@ body.pricing-mode-active .gallery-track-wrapper {
     transform: translateX(-50%) translateY(5px); /* Bob down effect */
 }
 
-/* --- FOOTER (NEW GLASS STYLE) --- */
+/* --- FOOTER (REDESIGNED) --- */
 .footer-section {
     position: fixed; bottom: 30px; 
     width: 100%; 
     height: auto;
     display: flex; justify-content: center; align-items: center;
     z-index: 50;
-    pointer-events: none; /* Let clicks pass through outside the pill */
+    pointer-events: none; 
 }
 
 .footer-glass {
@@ -347,24 +354,95 @@ body.pricing-mode-active .gallery-track-wrapper {
     -webkit-backdrop-filter: blur(15px) saturate(120%);
     border: 1px solid var(--glass-border);
     padding: 15px 40px;
-    border-radius: 50px;
+    border-radius: 60px; /* More pill-shaped */
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     
-    /* Text styling */
-    font-size: 11px; 
-    letter-spacing: 2px; 
-    color: #444;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 40px; /* More breathing room */
+    
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .footer-glass:hover {
-    transform: translateY(-2px);
     box-shadow: 0 15px 40px rgba(0,0,0,0.15);
 }
 
-.copy-text { cursor: pointer; display: inline-block; transition: color 0.3s; }
-.copy-text:hover { color: #000; text-shadow: 0 0 10px rgba(0,0,0,0.1); }
+.footer-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: transform 0.3s ease, opacity 0.3s;
+    position: relative;
+    padding: 5px 0;
+}
+
+/* Hover effect for individual items */
+.footer-item:hover {
+    transform: scale(1.05);
+    opacity: 1 !important;
+}
+
+/* Dim siblings on hover */
+.footer-glass:has(.footer-item:hover) .footer-item:not(:hover) {
+    opacity: 0.4;
+}
+
+.icon-wrapper {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.footer-icon {
+    width: 18px; height: 18px;
+    color: #333;
+}
+
+.verified-state {
+    color: var(--verified-green);
+}
+
+.text-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.label {
+    font-family: var(--font-display);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #666;
+    margin-bottom: 2px;
+    opacity: 0.7;
+}
+
+.value-container {
+    position: relative;
+    height: 16px; /* Fix height to prevent jumps */
+    overflow: hidden;
+}
+
+.value {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: #111;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+/* Removed value-copied styles as it's replaced by icon animation */
+
+.footer-divider {
+    width: 1px;
+    height: 30px;
+    background: rgba(0,0,0,0.1);
+}
 
 /* --- MODAL --- */
 .modal {
@@ -397,8 +475,9 @@ body.pricing-mode-active .gallery-track-wrapper {
     .header-canvas { width: 400px; height: 240px; }
     .elevator-nav { left: calc(50% + 230px); } 
     .nav-bar { gap: 80px; }
-    .gallery-item { width: 300px; }
-    .gallery-canvas { width: 300px; height: 200px; }
+    /* REDUCED SIZE Tablet: ~5-7% smaller */
+    .gallery-item { width: 285px; }
+    .gallery-canvas { height: 190px; }
 }
 
 @media (max-width: 768px) {
@@ -409,23 +488,33 @@ body.pricing-mode-active .gallery-track-wrapper {
     .elevator-nav { position: fixed; right: 10px; left: auto; gap: 20px; }
     .reveal { display: none; }
     #floor-display { font-size: 10px; transform: translate(-50%, 40px); }
-    .header-text h1 { font-size: 20px; letter-spacing: 4px; }
-    .header-text h2 { font-size: 8px; letter-spacing: 3px; }
     .gallery-track-wrapper { top: 60%; }
     body.pricing-mode-active .gallery-track-wrapper { top: 50%; } 
-    .gallery-item { width: 260px; }
-    .gallery-canvas { width: 260px; height: 180px; }
+    /* REDUCED SIZE Mobile: ~5-7% smaller */
+    .gallery-item { width: 245px; }
+    .gallery-canvas { height: 170px; }
     .gallery-track { padding-left: 50vw; } 
     
     /* Footer Mobile Adjustments */
-    .footer-section { bottom: 20px; }
-    .footer-glass { padding: 12px 20px; font-size: 9px; width: 90%; max-width: 300px; }
-
+    .footer-glass { 
+        gap: 15px; 
+        padding: 10px 20px; 
+        flex-direction: row; /* Keep row but condense */
+        width: 90%; 
+        justify-content: space-around;
+    }
+    .footer-divider { display: block; height: 25px; } /* Keep divider */
+    .label { display: none; } /* Hide labels on very small screens to save space */
+    .value { font-size: 11px; }
+    .icon-wrapper { width: 28px; height: 28px; }
+    .footer-icon { width: 14px; height: 14px; }
+    .footer-item { gap: 8px; }
+    
     /* Pricing Mobile Adjustments */
     .pricing-glass-panel { width: 95%; }
     .pricing-content { flex-direction: column; padding: 20px; gap: 20px; }
     .pricing-card { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 20px; }
     .pricing-card:last-child { border-bottom: none; }
     #pricing-container-wrapper { height: 60vh; align-items: flex-end; bottom: 0; }
-    .pricing-close-trigger { bottom: -40px; } /* Slightly closer on mobile */
+    .pricing-close-trigger { bottom: -40px; } 
 }
