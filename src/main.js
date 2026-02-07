@@ -75,9 +75,9 @@ const pricingConfigs = [
 ];
 
 const floorData = [
-  { id: "portrait", label: "PORTRAITS", items: portraitImages },
-  { id: "arch", label: "ARCHITECTURE", items: architectureImages },
-  { id: "product", label: "PRODUCT", items: productImages }, // Updated Label
+  { id: "portrait", label: "PORTRÉTY", items: portraitImages },
+  { id: "arch", label: "ARCHITEKTURA", items: architectureImages },
+  { id: "product", label: "FILM", items: productImages }, // Updated Label
   { id: "artistic", label: "ARTISTIC", items: artisticImages }
 ];
 
