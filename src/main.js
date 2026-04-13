@@ -10,6 +10,11 @@ const portraitImages = [
     { title: "ROMA", src: "/art2.jpg" },
     { title: "THE ROAD AHEAD", src: "/art3.jpg" },
     { title: "THE ACADEMY", src: "/art4.jpg" },
+    { title: "GEOMETRY", src: "/art5.jpg" },
+    { title: "GEOMETRY", src: "/art5.jpg" },
+    { title: "GEOMETRY", src: "/art5.jpg" },
+    { title: "GEOMETRY", src: "/art5.jpg" },
+    { title: "GEOMETRY", src: "/art5.jpg" },
     { title: "GEOMETRY", src: "/art5.jpg" }
 ];
 
